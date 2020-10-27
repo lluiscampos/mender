@@ -1,0 +1,30 @@
+<!DOCTYPE node PUBLIC
+    "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" >
+<node name="/com/mender/AuthenticationManager1">
+  <!--
+    com.mender.Authentication1:
+    @short_description: Authentication API v1
+  -->
+  <interface name="com.mender.Authentication1">
+    <!--
+      GetJwtToken:
+      @short_description: Gets current JWT token
+
+      Queries the Mender service for the current JWT token. If none
+      is available, an error will be returned.
+    -->
+    <method name="GetJwtToken">
+      <arg name="token" direction="out" type="s">
+        <doc:doc><doc:summary>Current JWT token</doc:summary></doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets current JWT token
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+  </interface>
+</node>
