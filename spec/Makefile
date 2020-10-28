@@ -1,6 +1,6 @@
 
 
-all: code doc
+all: code doc app
 
 mender-dbus.c mender-dbus.h: AuthenticationManager1.xml
 	gdbus-codegen --generate-c-code mender-dbus --c-namespace Mender \
@@ -16,9 +16,15 @@ doc/doc-com.mender.Authentication1.html doc/doc-com.mender.Authentication1.md: A
 
 doc: doc/doc-com.mender.Authentication1.html
 
+a.out: main.c mender-dbus.c
+	gcc main.c mender-dbus.c -I /usr/include/gio-unix-2.0/ $(shell pkg-config --libs --cflags gio-2.0)
+
+app: a.out
+
 clean:
 	rm -f mender-dbus.c mender-dbus.h
 	rm -rf doc
+	rm -f a.out
 
 
 .PHONY: all
