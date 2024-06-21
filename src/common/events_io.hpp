@@ -19,7 +19,9 @@
 #include <vector>
 #include <unordered_map>
 
+#ifdef MENDER_USE_BOOST_ASIO
 #include <boost/asio.hpp>
+#endif // MENDER_USE_BOOST_ASIO
 
 #include <common/events.hpp>
 #include <common/io.hpp>
@@ -31,8 +33,10 @@ namespace io {
 
 using namespace std;
 
+#ifdef MENDER_USE_BOOST_ASIO
 namespace asio = boost::asio;
 namespace mio = mender::common::io;
+#endif // MENDER_USE_BOOST_ASIO
 
 enum class Append {
 	Disabled,

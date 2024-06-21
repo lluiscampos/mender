@@ -90,15 +90,15 @@ ExpectedHeader Parse(io::Reader &reader, ParserConfig conf) {
 			return expected::unexpected(
 				parser_error::MakeError(parser_error::NoStateScriptsPathError, ""));
 		}
-		if (not path::FileExists(conf.artifact_scripts_filesystem_path)) {
-			log::Trace(
-				"Creating the Artifact script directory: " + conf.artifact_scripts_filesystem_path);
-			error::Error err = path::CreateDirectories(conf.artifact_scripts_filesystem_path);
-			if (err != error::NoError) {
-				return expected::unexpected(err.WithContext(
-					"Failed to create the scripts directory for installing Artifact scripts"));
-			}
-		}
+		// if (not path::FileExists(conf.artifact_scripts_filesystem_path)) {
+		// 	log::Trace(
+		// 		"Creating the Artifact script directory: " + conf.artifact_scripts_filesystem_path);
+		// 	error::Error err = path::CreateDirectories(conf.artifact_scripts_filesystem_path);
+		// 	if (err != error::NoError) {
+		// 		return expected::unexpected(err.WithContext(
+		// 			"Failed to create the scripts directory for installing Artifact scripts"));
+		// 	}
+		// }
 	}
 	while (tok.type == token::Type::ArtifactScripts) {
 		log::Trace("Parsing state script...");
@@ -124,12 +124,12 @@ ExpectedHeader Parse(io::Reader &reader, ParserConfig conf) {
 		state_scripts.push_back(artifact_script_path);
 
 		// Set the permissions on the installed Artifact scripts
-		err = path::Permissions(
-			artifact_script_path,
-			{path::Perms::Owner_read, path::Perms::Owner_write, path::Perms::Owner_exec});
-		if (err != error::NoError) {
-			return expected::unexpected(err);
-		}
+		// err = path::Permissions(
+		// 	artifact_script_path,
+		// 	{path::Perms::Owner_read, path::Perms::Owner_write, path::Perms::Owner_exec});
+		// if (err != error::NoError) {
+		// 	return expected::unexpected(err);
+		// }
 
 		tok = lexer.Next();
 	}
@@ -157,10 +157,10 @@ ExpectedHeader Parse(io::Reader &reader, ParserConfig conf) {
 		}
 
 		// Sync the directory so we know it is permanent.
-		auto err = path::DataSyncRecursively(conf.artifact_scripts_filesystem_path);
-		if (err != error::NoError) {
-			return expected::unexpected(err.WithContext("While syncing artifact script directory"));
-		}
+		// auto err = path::DataSyncRecursively(conf.artifact_scripts_filesystem_path);
+		// if (err != error::NoError) {
+		// 	return expected::unexpected(err.WithContext("While syncing artifact script directory"));
+		// }
 	}
 
 

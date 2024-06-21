@@ -30,6 +30,7 @@
 #include <common/processes.hpp>
 
 #include <mender-update/cli/cli.hpp>
+#include <mender-update/context.hpp>
 #include <mender-update/daemon.hpp>
 #include <mender-update/standalone.hpp>
 
@@ -53,6 +54,7 @@ namespace kv_db = mender::common::key_value_database;
 namespace log = mender::common::log;
 namespace path = mender::common::path;
 namespace standalone = mender::update::standalone;
+namespace context = mender::update::context;
 
 static error::Error DoMaybeInstallBootstrapArtifact(context::MenderContext &main_context) {
 	const string bootstrap_artifact_path {

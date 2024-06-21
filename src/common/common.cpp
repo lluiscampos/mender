@@ -99,5 +99,29 @@ vector<string> JoinStringsMaxWidth(
 	return ret;
 }
 
+extern "C" {
+void open() {
+}
+void read() {
+}
+void write() {
+}
+void lseek() {
+}
+void close() {
+}
+void fstat() {
+}
+
+void __gexf2() {
+}
+void __unordxf2() {
+}
+void __lexf2() {
+}
+void __gtxf2() {
+}
+}
+
 } // namespace common
 } // namespace mender

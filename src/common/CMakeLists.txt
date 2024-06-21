@@ -37,7 +37,7 @@ if(${MENDER_USE_TINY_PROC_LIB})
   add_subdirectory(vendor/tiny-process-library)
 endif()
 
-include(cmake/boost.cmake)
+# include(cmake/boost.cmake)
 
 add_library(common_cpp INTERFACE)
 target_compile_options(common_cpp INTERFACE -Werror -Wall -Wsuggest-override)
@@ -50,8 +50,8 @@ target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/..)
 target_link_libraries(common PUBLIC common_cpp)
 
-add_library(common_setup STATIC setup/platform/posix/setup.cpp)
-target_link_libraries(common_setup PUBLIC common)
+# add_library(common_setup STATIC setup/platform/posix/setup.cpp)
+# target_link_libraries(common_setup PUBLIC common)
 
 add_library(common_error STATIC
   error.cpp
@@ -61,7 +61,7 @@ target_link_libraries(common_error PUBLIC common)
 
 add_library(common_io STATIC
   io/io.cpp
-  io/platform/c++17/io.cpp
+  #io/platform/c++17/io.cpp
   io/platform/posix/io.cpp
 )
 target_compile_options(common_io PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
@@ -70,8 +70,8 @@ target_link_libraries(common_io PUBLIC common)
 add_library(common_path STATIC)
 target_sources(common_path PRIVATE
   path/path.cpp
-  path/platform/c++17/path.cpp
-  path/platform/posix/path.cpp
+  #path/platform/c++17/path.cpp
+  #path/platform/posix/path.cpp
 )
 target_compile_options(common_path PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
 target_link_libraries(common_path
@@ -91,10 +91,16 @@ if(MENDER_USE_NLOHMANN_JSON)
   target_sources(common_json PRIVATE json/platform/nlohmann/nlohmann_json.cpp)
   target_include_directories(common_json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include/)
   target_link_libraries(common_json PUBLIC common common_io common_error)
+  # TODO: move this to an if no posix
+  target_compile_definitions(common_json PUBLIC JSON_HAS_FILESYSTEM=0)
 endif()
 
 add_library(common_key_value_database STATIC
   key_value_database.cpp
+)
+target_link_libraries(common_key_value_database PUBLIC
+  common
+  common_log
 )
 target_compile_options(common_key_value_database PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
 if(MENDER_USE_LMDB)
@@ -103,54 +109,93 @@ if(MENDER_USE_LMDB)
   target_include_directories(common_key_value_database SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lmdbxx/include)
   target_link_libraries(common_key_value_database PUBLIC
     lmdb
-    common
-    common_log
   )
 endif()
 
-add_library(common_events STATIC
-  events/events_io.cpp
-  events/platform/boost/events.cpp
-  events/platform/boost/events_io.cpp
-)
-target_compile_options(common_events PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
-target_link_libraries(common_events PUBLIC common_error common_log)
-target_link_libraries(common_events PUBLIC Boost::asio)
-
-find_package(OpenSSL REQUIRED)
-if(NOT ${OpenSSL_Found})
-  message(FATAL_ERROR "OpenSSL not found during build")
-endif()
-
-if ("${OPENSSL_VERSION}" VERSION_LESS 3.0.0)
-  set(MENDER_CRYPTO_OPENSSL_LEGACY 1)
+if(MENDER_USE_BOOST_ASIO)
+  add_library(common_events STATIC
+    events/events_io.cpp
+    events/platform/boost/events.cpp
+    events/platform/boost/events_io.cpp
+  )
+  target_compile_options(common_events PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+  target_link_libraries(common_events PUBLIC common_error common_log)
+  target_link_libraries(common_events PUBLIC Boost::asio)
+elseif(MENDER_EVENTS_STUB)
+  add_library(common_events STATIC
+    events/events_io.cpp
+    events/platform/stub/events.cpp
+    events/platform/stub/events_io.cpp
+  )
+  target_compile_options(common_events PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+  target_link_libraries(common_events PUBLIC common_error common_log)
+  # target_link_libraries(common_events PUBLIC Boost::asio)
 else()
-  set(MENDER_CRYPTO_OPENSSL_LEGACY 0)
+  message(FATAL_ERROR "Either MENDER_USE_BOOST_ASIO or MENDER_EVENTS_STUB needs to be enabled")
 endif()
 
-configure_file(crypto/platform/openssl/openssl_config.h.in crypto/platform/openssl/openssl_config.h)
 
-add_library(common_http STATIC http/http.cpp http/platform/beast/http.cpp)
-target_compile_options(common_http PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
-target_link_libraries(common_http PUBLIC
-  Boost::beast
-  common
-  common_crypto
-  common_events
-  common_error
-  common_log
-  OpenSSL::SSL
-  OpenSSL::Crypto
-)
-if ("${CMAKE_SYSTEM_NAME}" STREQUAL "QNX")
-  target_link_libraries(common_http PUBLIC socket)
+# find_package(OpenSSL REQUIRED)
+# if(NOT ${OpenSSL_Found})
+#   message(FATAL_ERROR "OpenSSL not found during build")
+# endif()
+
+# if ("${OPENSSL_VERSION}" VERSION_LESS 3.0.0)
+#   set(MENDER_CRYPTO_OPENSSL_LEGACY 1)
+# else()
+#   set(MENDER_CRYPTO_OPENSSL_LEGACY 0)
+# endif()
+
+# configure_file(crypto/platform/openssl/openssl_config.h.in crypto/platform/openssl/openssl_config.h)
+
+if(MENDER_USE_BOOST_BEAST)
+  add_library(common_http STATIC http/http.cpp http/platform/beast/http.cpp)
+  target_compile_options(common_http PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+  target_link_libraries(common_http PUBLIC
+    Boost::beast
+    common
+    common_crypto
+    common_events
+    common_error
+    common_log
+    OpenSSL::SSL
+    OpenSSL::Crypto
+  )
+  if ("${CMAKE_SYSTEM_NAME}" STREQUAL "QNX")
+    target_link_libraries(common_http PUBLIC socket)
+  endif()
+
+elseif(MENDER_HTTP_STUB)
+  add_library(common_http STATIC http/http.cpp http/platform/stub/http.cpp)
+  target_compile_options(common_http PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+  target_link_libraries(common_http PUBLIC
+    common
+    common_crypto
+    common_events
+    common_error
+    common_log
+  )
+else()
+  message(FATAL_ERROR "Either MENDER_USE_BOOST_BEAST or MENDER_HTTP_STUB needs to be enabled")
 endif()
 
 add_library(common_log STATIC)
 # Accept the global compiler flags
 target_compile_options(common_log PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+
+if(MENDER_LOG_BOOST)
+
 target_sources(common_log PRIVATE log/platform/boost/boost_log.cpp)
 target_link_libraries(common_log PUBLIC common_error Boost::log)
+
+elseif(MENDER_LOG_STUB)
+
+  target_sources(common_log PRIVATE log/platform/stub/stub_log.cpp)
+  target_link_libraries(common_log PUBLIC common_error)
+
+else()
+  message(FATAL_ERROR "Either MENDER_LOG_BOOST or MENDER_LOG_STUB needs to be enabled")
+endif()
 
 add_library(common_processes STATIC processes/processes.cpp)
 target_compile_options(common_processes PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
@@ -159,24 +204,40 @@ if(MENDER_USE_TINY_PROC_LIB)
   target_sources(common_processes PRIVATE processes/platform/tiny_process_library/tiny_process_library.cpp)
   target_include_directories(common_processes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tiny-process-library)
   target_link_libraries(common_processes PUBLIC tiny-process-library::tiny-process-library common_path)
+elseif(MENDER_PROC_STUB)
+  target_sources(common_processes PRIVATE processes/platform/stub/process.cpp)
+else()
+  message(FATAL_ERROR "Either MENDER_USE_TINY_PROC_LIB or MENDER_PROC_STUB needs to be enabled")
 endif()
 
 add_library(common_key_value_parser STATIC key_value_parser/key_value_parser.cpp)
 target_link_libraries(common_key_value_parser PUBLIC common_error)
 
-add_library(common_crypto STATIC crypto/crypto.cpp crypto/platform/openssl/crypto.cpp)
-target_compile_options(common_crypto PRIVATE
-  ${PLATFORM_SPECIFIC_COMPILE_OPTIONS}
-  # For OpenSSLv3 we do want the deprecated support to support the Engine API
-  -Wno-deprecated-declarations
-)
+add_library(common_crypto STATIC crypto/crypto.cpp)
+if(MENDER_CRYPTO_OPENSSL)
+  target_sources(common_log PRIVATE crypto/platform/openssl/crypto.cpp)
+  target_compile_options(common_crypto PRIVATE
+    ${PLATFORM_SPECIFIC_COMPILE_OPTIONS}
+    # For OpenSSLv3 we do want the deprecated support to support the Engine API
+    -Wno-deprecated-declarations
+  )
+  target_link_libraries(common_crypto PUBLIC
+    common_log
+    common_io
+    sha
+    OpenSSL::SSL
+    OpenSSL::Crypto
+  )
+elseif(MENDER_CRYPTO_STUB)
+  target_sources(common_log PRIVATE crypto/platform/stub/crypto.cpp)
 target_link_libraries(common_crypto PUBLIC
-  common_log
-  common_io
-  sha
-  OpenSSL::SSL
-  OpenSSL::Crypto
-)
+    common_log
+    common_io
+    sha
+  )
+else()
+  message(FATAL_ERROR "Either MENDER_CRYPTO_OPENSSL or MENDER_CRYPTO_STUB needs to be enabled")
+endif()
 
 if(MENDER_USE_DBUS)
   find_package(PkgConfig REQUIRED)

@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #ifdef MENDER_USE_TINY_PROC_LIB
 #include <process.hpp>
@@ -115,8 +116,10 @@ public:
 	ExpectedLineData GenerateLineData(
 		chrono::nanoseconds timeout = DEFAULT_GENERATE_LINE_DATA_TIMEOUT);
 
+#ifdef MENDER_USE_TINY_PROC_LIB
 	io::ExpectedAsyncReaderPtr GetAsyncStdoutReader(events::EventLoop &loop);
 	io::ExpectedAsyncReaderPtr GetAsyncStderrReader(events::EventLoop &loop);
+#endif
 
 	// Terminate and make sure it is so before returning.
 	int EnsureTerminated();
@@ -134,15 +137,15 @@ private:
 	int stderr_pipe_ {-1};
 
 	future<int> future_exit_status_;
+#endif
 
 	struct AsyncWaitData {
-		mutex data_mutex;
+		// std::mutex data_mutex;
 		events::EventLoop *event_loop {nullptr};
 		AsyncWaitHandler handler;
 		bool process_ended {false};
 	};
 	shared_ptr<AsyncWaitData> async_wait_data_;
-#endif
 
 	vector<string> args_;
 	string work_dir_;

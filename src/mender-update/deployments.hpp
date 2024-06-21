@@ -184,9 +184,11 @@ public:
 	error::Error BeginLogging();
 	error::Error FinishLogging();
 	~DeploymentLog() {
+#ifdef MENDER_LOG_BOOST
 		if (sink_) {
 			FinishLogging();
 		}
+#endif // MENDER_LOG_BOOST
 	};
 
 	string LogFileName();

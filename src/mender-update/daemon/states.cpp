@@ -67,31 +67,31 @@ void InitState::OnEnter(Context &ctx, sm::EventPoster<StateEvent> &poster) {
 }
 
 void StateScriptState::OnEnter(Context &ctx, sm::EventPoster<StateEvent> &poster) {
-	string state_name {script_executor::Name(this->state_, this->action_)};
-	log::Debug("Executing the  " + state_name + " State Scripts...");
-	auto err = this->script_.AsyncRunScripts(
-		this->state_,
-		this->action_,
-		[state_name, &poster](error::Error err) {
-			if (err != error::NoError) {
-				log::Error(
-					"Received error: (" + err.String() + ") when running the State Script scripts "
-					+ state_name);
-				poster.PostEvent(StateEvent::Failure);
-				return;
-			}
-			log::Debug("Successfully ran the " + state_name + " State Scripts...");
-			poster.PostEvent(StateEvent::Success);
-		},
-		this->on_error_);
+	// string state_name {script_executor::Name(this->state_, this->action_)};
+	// log::Debug("Executing the  " + state_name + " State Scripts...");
+	// auto err = this->script_.AsyncRunScripts(
+	// 	this->state_,
+	// 	this->action_,
+	// 	[state_name, &poster](error::Error err) {
+	// 		if (err != error::NoError) {
+	// 			log::Error(
+	// 				"Received error: (" + err.String() + ") when running the State Script scripts "
+	// 				+ state_name);
+	// 			poster.PostEvent(StateEvent::Failure);
+	// 			return;
+	// 		}
+	// 		log::Debug("Successfully ran the " + state_name + " State Scripts...");
+	// 		poster.PostEvent(StateEvent::Success);
+	// 	},
+	// 	this->on_error_);
 
-	if (err != error::NoError) {
-		log::Error(
-			"Failed to schedule the state script execution for: " + state_name
-			+ " got error: " + err.String());
-		poster.PostEvent(StateEvent::Failure);
-		return;
-	}
+	// if (err != error::NoError) {
+	// 	log::Error(
+	// 		"Failed to schedule the state script execution for: " + state_name
+	// 		+ " got error: " + err.String());
+	// 	poster.PostEvent(StateEvent::Failure);
+	// 	return;
+	// }
 }
 
 
@@ -309,12 +309,12 @@ void UpdateDownloadState::ParseArtifact(Context &ctx, sm::EventPoster<StateEvent
 	string art_scripts_path = ctx.mender_context.GetConfig().paths.GetArtScriptsPath();
 
 	// Clear the artifact scripts directory so we don't risk old scripts lingering.
-	auto err = path::DeleteRecursively(art_scripts_path);
-	if (err != error::NoError) {
-		log::Error("When preparing to parse artifact: " + err.String());
-		poster.PostEvent(StateEvent::Failure);
-		return;
-	}
+	// auto err = path::DeleteRecursively(art_scripts_path);
+	// if (err != error::NoError) {
+	// 	log::Error("When preparing to parse artifact: " + err.String());
+	// 	poster.PostEvent(StateEvent::Failure);
+	// 	return;
+	// }
 
 	artifact::config::ParserConfig config {
 		.artifact_scripts_filesystem_path = art_scripts_path,
@@ -357,7 +357,7 @@ void UpdateDownloadState::ParseArtifact(Context &ctx, sm::EventPoster<StateEvent
 	assert(ctx.deployment.state_data->update_info.artifact.payload_types.size() == 1);
 
 	// Initial state data save, now that we have enough information from the artifact.
-	err = ctx.SaveDeploymentStateData(*ctx.deployment.state_data);
+	auto err = ctx.SaveDeploymentStateData(*ctx.deployment.state_data);
 	if (err != error::NoError) {
 		log::Error(err.String());
 		if (err.code
@@ -675,13 +675,13 @@ void UpdateCommitState::OnEnter(Context &ctx, sm::EventPoster<StateEvent> &poste
 	log::Debug("Entering ArtifactCommit state");
 
 	// Explicitly check if state scripts version is supported
-	auto err = script_executor::CheckScriptsCompatibility(
-		ctx.mender_context.GetConfig().paths.GetRootfsScriptsPath());
-	if (err != error::NoError) {
-		log::Error("Failed script compatibility check: " + err.String());
-		poster.PostEvent(StateEvent::Failure);
-		return;
-	}
+	// auto err = script_executor::CheckScriptsCompatibility(
+	// 	ctx.mender_context.GetConfig().paths.GetRootfsScriptsPath());
+	// if (err != error::NoError) {
+	// 	log::Error("Failed script compatibility check: " + err.String());
+	// 	poster.PostEvent(StateEvent::Failure);
+	// 	return;
+	// }
 
 	DefaultAsyncErrorHandler(
 		poster,

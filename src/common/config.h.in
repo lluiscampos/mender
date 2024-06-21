@@ -5,6 +5,7 @@
 #cmakedefine MENDER_USE_YAML_CPP
 #cmakedefine MENDER_USE_TINY_PROC_LIB
 #cmakedefine MENDER_USE_LMDB
+#cmakedefine MENDER_DB_STUB
 #cmakedefine MENDER_USE_BOOST_ASIO
 #cmakedefine MENDER_USE_DBUS
 #cmakedefine MENDER_USE_ASIO_LIBDBUS

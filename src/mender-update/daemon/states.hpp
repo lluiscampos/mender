@@ -285,14 +285,14 @@ public:
 		const string &artifact_script_path,
 		const string &rootfs_script_path,
 		script_executor::OnError on_error_) :
-		script_ {
-			event_loop,
-			script_timeout,
-			retry_interval,
-			retry_timeout,
-			artifact_script_path,
-			rootfs_script_path,
-		},
+		// script_ {
+		// 	event_loop,
+		// 	script_timeout,
+		// 	retry_interval,
+		// 	retry_timeout,
+		// 	artifact_script_path,
+		// 	rootfs_script_path,
+		// },
 		state_ {state},
 		action_ {action},
 		on_error_ {on_error_} {};
@@ -300,7 +300,7 @@ public:
 	void OnEnter(Context &ctx, sm::EventPoster<StateEvent> &poster) override;
 
 private:
-	script_executor::ScriptRunner script_;
+	// script_executor::ScriptRunner script_;
 	script_executor::State state_;
 	script_executor::Action action_;
 	script_executor::OnError on_error_;

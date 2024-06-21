@@ -25,7 +25,7 @@ namespace sha {
 
 namespace io = mender::common::io;
 
-const ErrorCategoryClass ErrorCategory = ErrorCategoryClass();
+const ErrorCategoryClass ErrorCategory;
 
 const char *ErrorCategoryClass::name() const noexcept {
 	return "ShaSumErrorCategory";

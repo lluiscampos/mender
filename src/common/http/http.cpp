@@ -191,6 +191,10 @@ size_t CaseInsensitiveHasher::operator()(const string &str) const {
 	return hash<string>()(common::StringToLower(str));
 }
 
+inline int strcasecmp(const char *__s1, const char *__s2) {
+	return 0;
+}
+
 bool CaseInsensitiveComparator::operator()(const string &str1, const string &str2) const {
 	return strcasecmp(str1.c_str(), str2.c_str()) == 0;
 }

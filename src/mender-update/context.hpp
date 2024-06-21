@@ -25,8 +25,10 @@
 #include <common/key_value_database.hpp>
 #include <common/optional.hpp>
 
-#ifdef MENDER_USE_LMDB
+#if defined(MENDER_USE_LMDB)
 #include <common/key_value_database_lmdb.hpp>
+#elif defined(MENDER_DB_STUB)
+#include <common/key_value_database_stub.hpp>
 #else
 #error MenderContext requires LMDB
 #endif // MENDER_USE_LMDB
@@ -146,8 +148,10 @@ public:
 	static const int standalone_data_version;
 
 private:
-#ifdef MENDER_USE_LMDB
+#if defined(MENDER_USE_LMDB)
 	kv_db::KeyValueDatabaseLmdb mender_store_;
+#elif defined(MENDER_DB_STUB)
+	kv_db::KeyValueDatabaseStub mender_store_;
 #endif // MENDER_USE_LMDB
 	conf::MenderConfig &config_;
 };

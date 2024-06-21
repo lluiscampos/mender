@@ -21,8 +21,14 @@ target_link_libraries(mender_deployments PUBLIC
   common_log
   common_path
 )
-target_sources(mender_deployments PRIVATE deployments/platform/boost_log/deployments.cpp)
-target_compile_options(mender_deployments PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+if(MENDER_LOG_BOOST)
+  target_sources(mender_deployments PRIVATE deployments/platform/boost_log/deployments.cpp)
+  target_compile_options(mender_deployments PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+elseif(MENDER_LOG_STUB)
+  target_sources(mender_deployments PRIVATE deployments/platform/stub_log/deployments.cpp)
+else()
+  message(FATAL_ERROR "Either MENDER_LOG_BOOST or MENDER_LOG_STUB needs to be enabled")
+endif()
 
 add_library(mender_inventory STATIC inventory.cpp)
 target_link_libraries(mender_inventory PUBLIC
@@ -49,22 +55,32 @@ target_link_libraries(update_module PUBLIC
   artifact
   mender_progress_reader
 )
-target_sources(update_module PRIVATE
-  update_module/v3/platform/c++17/fs_operations.cpp
-  update_module/v3/platform/c++17/update_module_call.cpp
-)
-target_compile_options(update_module PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+if(MENDER_USE_POSIX)
+  target_sources(update_module PRIVATE
+    update_module/v3/platform/c++17/fs_operations.cpp
+    update_module/v3/platform/c++17/update_module_call.cpp
+  )
+  target_compile_options(update_module PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+elseif(MENDER_POSIX_STUB)
+  target_sources(update_module PRIVATE
+    update_module/v3/platform/stub/update_module.cpp
+    update_module/v3/platform/stub/update_module_call.cpp
+  )
+  target_compile_options(update_module PRIVATE ${PLATFORM_SPECIFIC_COMPILE_OPTIONS})
+else()
+  message(FATAL_ERROR "Either MENDER_USE_POSIX or MENDER_POSIX_STUB needs to be enabled")
+endif()
 
-add_library(mender_update_standalone STATIC
-  standalone/standalone.cpp
-)
-target_link_libraries(mender_update_standalone PUBLIC
-  common_error
-  common_http
-  update_module
-  mender_context
-  artifact_scripts_executor
-)
+# add_library(mender_update_standalone STATIC
+#   standalone/standalone.cpp
+# )
+# target_link_libraries(mender_update_standalone PUBLIC
+#   common_error
+#   common_http
+#   update_module
+#   mender_context
+#   artifact_scripts_executor
+# )
 
 add_library(mender_update_daemon STATIC
   daemon/context.cpp
@@ -81,40 +97,40 @@ target_link_libraries(mender_update_daemon PUBLIC
   mender_context
   mender_deployments
   mender_inventory
-  artifact_scripts_executor
+  # artifact_scripts_executor
   common_state_machine
 )
 if(MENDER_EMBED_MENDER_AUTH)
   target_link_libraries(mender_update_daemon PUBLIC
     mender_auth_api_auth
-    mender_auth_cli
+    # mender_auth_cli
   )
 endif()
 
-add_library(mender_update_cli STATIC
-  cli/actions.cpp
-  cli/cli.cpp
-)
-target_link_libraries(mender_update_cli PUBLIC
-  common_error
-  mender_context
-  mender_update_daemon
-  mender_update_standalone
-)
+# add_library(mender_update_cli STATIC
+#   cli/actions.cpp
+#   cli/cli.cpp
+# )
+# target_link_libraries(mender_update_cli PUBLIC
+#   common_error
+#   mender_context
+#   mender_update_daemon
+#   mender_update_standalone
+# )
 
-add_executable(mender-update main.cpp)
-target_link_libraries(mender-update PRIVATE
-  common_log
-  client_shared_conf
-  mender_context
-  update_module
-  common_setup
-  mender_update_cli
-)
-install(TARGETS mender-update
-  DESTINATION bin
-  COMPONENT mender-update
-)
+# add_executable(mender-update main.cpp)
+# target_link_libraries(mender-update PRIVATE
+#   common_log
+#   client_shared_conf
+#   mender_context
+#   update_module
+#   common_setup
+#   mender_update_cli
+# )
+# install(TARGETS mender-update
+#   DESTINATION bin
+#   COMPONENT mender-update
+# )
 
 add_custom_target(install-mender-update
   COMMAND ${CMAKE_COMMAND} --install . --component mender-update

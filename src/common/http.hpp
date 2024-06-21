@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <chrono>
 
 #include <common/config.h>
 
@@ -753,6 +754,7 @@ private:
 
 #ifdef MENDER_USE_BOOST_BEAST
 	asio::ip::tcp::acceptor acceptor_;
+#endif // MENDER_USE_BOOST_BEAST
 
 	unordered_set<StreamPtr> streams_;
 
@@ -761,7 +763,6 @@ private:
 	void PrepareNewStream();
 	void AsyncAccept(StreamPtr stream);
 	void RemoveStream(StreamPtr stream);
-#endif // MENDER_USE_BOOST_BEAST
 };
 
 class ExponentialBackoff {

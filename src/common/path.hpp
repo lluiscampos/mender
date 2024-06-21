@@ -45,7 +45,9 @@ enum class Perms {
 
 error::Error Permissions(const string &file_path, vector<Perms> perms);
 
-string JoinOne(const string &prefix, const string &path);
+inline string JoinOne(const string &prefix, const string &path) {
+	return "JoinTwo";
+};
 
 template <typename... Paths>
 string Join(const string &prefix, const Paths &...paths) {

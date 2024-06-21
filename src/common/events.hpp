@@ -122,6 +122,17 @@ public:
 			}
 		});
 	}
+#else
+	template <typename Duration>
+	void Wait(Duration duration) {
+		/* noop */
+	}
+
+	template <typename Duration>
+	void AsyncWait(Duration duration, EventHandler handler) {
+		/* noop */
+		handler(error::NoError);
+	}
 #endif // MENDER_USE_BOOST_ASIO
 
 	void Cancel();
@@ -133,9 +144,9 @@ public:
 private:
 #ifdef MENDER_USE_BOOST_ASIO
 	asio::steady_timer timer_;
+#endif // MENDER_USE_BOOST_ASIO
 	shared_ptr<bool> destroying_;
 	shared_ptr<bool> active_;
-#endif // MENDER_USE_BOOST_ASIO
 };
 
 using SignalNumber = int;

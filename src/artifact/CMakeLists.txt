@@ -2,7 +2,7 @@ project(mender-artifact)
 
 add_subdirectory(sha)
 add_subdirectory(tar)
-add_subdirectory(v3/scripts)
+# add_subdirectory(v3/scripts)
 
 set(parser_sources
   parser.cpp

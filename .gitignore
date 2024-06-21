@@ -60,5 +60,6 @@ build/
 *.cmake
 !main.cmake
 !/src/common/cmake/*.cmake
+!/cmake/*.cmake
 Testing
 /install_manifest*.txt
